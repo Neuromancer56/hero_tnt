@@ -1,4 +1,4 @@
-Minetest Game mod: tnt
+Hero TNT Mod
 ======================
 See license.txt for license information.
 
