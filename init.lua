@@ -1,6 +1,6 @@
 -- tnt/init.lua
 
-tnt = {}
+hero_tnt = {}
 
 -- Load support for MT game translation.
 local S = minetest.get_translator("tnt")
@@ -17,6 +17,8 @@ local loss_prob = {}
 
 loss_prob["default:cobble"] = 3
 loss_prob["default:dirt"] = 4
+loss_prob["default:tree"] = 3
+loss_prob["hero_mine_items:magma"]=3
 
 local tnt_radius = tonumber(minetest.settings:get("tnt_radius") or 3)
 
@@ -94,7 +96,9 @@ local function destroy(drops, npos, cid, c_air, c_fire,
 		on_blast_queue, on_construct_queue,
 		ignore_protection, ignore_on_blast, owner)
 	local def = cid_data[cid]
-	if (not ignore_protection and minetest.is_protected(npos, owner)) or  def.name ~= "default:cobble" then
+	--if (not ignore_protection and minetest.is_protected(npos, owner)) or  (def.name ~= "default:cobble" and def.name ~= "hero_mine_items:magma" and def.name ~= "default:tree") then
+	if (not ignore_protection and minetest.is_protected(npos, owner)) or  (def.name ~= "default:cobble" and def.name ~= "hero_mine_items:magma") then
+	--if (not ignore_protection and minetest.is_protected(npos, owner)) or  def.name ~= "default:cobble" then
 	--if not ignore_protection and minetest.is_protected(npos, owner) then
 		return cid
 	end
@@ -272,7 +276,7 @@ local function add_effects(pos, radius, drops)
 	})
 end
 
-function tnt.burn(pos, nodename)
+function hero_tnt.burn(pos, nodename)
 	local name = nodename or minetest.get_node(pos).name
 	local def = minetest.registered_nodes[name]
 	if not def then
@@ -297,12 +301,12 @@ local function tnt_explode(pos, radius, ignore_protection, ignore_on_blast, owne
 	local data = vm1:get_data()
 	local count = 0
 	local c_tnt
-	local c_tnt_burning = minetest.get_content_id("tnt:tnt_burning")
-	local c_tnt_boom = minetest.get_content_id("tnt:boom")
+	local c_tnt_burning = minetest.get_content_id("hero_tnt:tnt_burning")
+	local c_tnt_boom = minetest.get_content_id("hero_tnt:boom")
 	local c_air = minetest.CONTENT_AIR
 	local c_ignore = minetest.CONTENT_IGNORE
 	if enable_tnt then
-		c_tnt = minetest.get_content_id("tnt:tnt")
+		c_tnt = minetest.get_content_id("hero_tnt:tnt")
 	else
 		c_tnt = c_tnt_burning -- tnt is not registered if disabled
 	end
@@ -399,20 +403,20 @@ local function tnt_explode(pos, radius, ignore_protection, ignore_on_blast, owne
 		queued_data.fn(queued_data.pos)
 	end
 
-	minetest.log("action", "TNT owned by " .. owner .. " detonated at " ..
+	minetest.log("action", "HERO TNT owned by " .. owner .. " detonated at " ..
 		minetest.pos_to_string(pos) .. " with radius " .. radius)
 
 	return drops, radius
 end
 
-function tnt.boom(pos, def)
+function hero_tnt.boom(pos, def)
 	def = def or {}
 	def.radius = def.radius or 1
 	def.damage_radius = def.damage_radius or def.radius * 2
 	local meta = minetest.get_meta(pos)
 	local owner = meta:get_string("owner")
 	if not def.explode_center and def.ignore_protection ~= true then
-		minetest.set_node(pos, {name = "tnt:boom"})
+		minetest.set_node(pos, {name = "hero_tnt:boom"})
 	end
 	local sound = def.sound or "tnt_explode"
 	minetest.sound_play(sound, {pos = pos, gain = 2.5,
@@ -426,7 +430,7 @@ function tnt.boom(pos, def)
 		eject_drops(drops, pos, radius)
 	end
 	add_effects(pos, radius, drops)
-	minetest.log("action", "A TNT explosion occurred at " .. minetest.pos_to_string(pos) ..
+	minetest.log("action", "A HERO TNT explosion occurred at " .. minetest.pos_to_string(pos) ..
 		" with radius " .. radius)
 end
 
@@ -541,7 +545,7 @@ minetest.register_node("hero_tnt:gunpowder_burning", {
 		for dz = -1, 1 do
 			if math.abs(dx) + math.abs(dz) == 1 then
 				for dy = -1, 1 do
-					tnt.burn({
+					hero_tnt.burn({
 						x = pos.x + dx,
 						y = pos.y + dy,
 						z = pos.z + dz,
@@ -599,15 +603,15 @@ if enable_tnt then
 		interval = 4,
 		chance = 1,
 		action = function(pos, node)
-			tnt.burn(pos, node.name)
+			hero_tnt.burn(pos, node.name)
 		end,
 	})
 end
 
-function tnt.register_tnt(def)
+function hero_tnt.register_tnt(def)
 	local name
 	if not def.name:find(':') then
-		name = "tnt:" .. def.name
+		name = "hero_tnt:" .. def.name
 	else
 		name = def.name
 		def.name = def.name:match(":([%w_]+)")
@@ -641,13 +645,13 @@ function tnt.register_tnt(def)
 			end,
 			on_blast = function(pos, intensity)
 				minetest.after(0.1, function()
-					tnt.boom(pos, def)
+					hero_tnt.boom(pos, def)
 				end)
 			end,
 			mesecons = {effector =
 				{action_on =
 					function(pos)
-						tnt.boom(pos, def)
+						hero_tnt.boom(pos, def)
 					end
 				}
 			},
@@ -680,7 +684,7 @@ function tnt.register_tnt(def)
 		sounds = default.node_sound_wood_defaults(),
 		groups = {falling_node = 1, not_in_creative_inventory = 1},
 		on_timer = function(pos, elapsed)
-			tnt.boom(pos, def)
+			hero_tnt.boom(pos, def)
 		end,
 		-- unaffected by explosions
 		on_blast = function() end,
@@ -692,7 +696,7 @@ function tnt.register_tnt(def)
 	})
 end
 
-tnt.register_tnt({
+hero_tnt.register_tnt({
 	name = "hero_tnt:tnt",
 	description = S("HERO TNT"),
 	radius = tnt_radius,
