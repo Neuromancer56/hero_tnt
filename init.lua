@@ -18,7 +18,7 @@ local loss_prob = {}
 loss_prob["default:cobble"] = 3
 loss_prob["default:dirt"] = 4
 loss_prob["default:tree"] = 3
-loss_prob["hero_mine_items:magma"]=3
+loss_prob["hero_mines:magma"]=3
 
 local tnt_radius = tonumber(minetest.settings:get("tnt_radius") or 3)
 
@@ -97,7 +97,7 @@ local function destroy(drops, npos, cid, c_air, c_fire,
 		ignore_protection, ignore_on_blast, owner)
 	local def = cid_data[cid]
 	--if (not ignore_protection and minetest.is_protected(npos, owner)) or  (def.name ~= "default:cobble" and def.name ~= "hero_mine_items:magma" and def.name ~= "default:tree") then
-	if (not ignore_protection and minetest.is_protected(npos, owner)) or  (def.name ~= "default:cobble" and def.name ~= "hero_mine_items:magma") then
+	if (not ignore_protection and minetest.is_protected(npos, owner)) or  (def.name ~= "default:cobble" and def.name ~= "hero_mines:magma") then
 	--if (not ignore_protection and minetest.is_protected(npos, owner)) or  def.name ~= "default:cobble" then
 	--if not ignore_protection and minetest.is_protected(npos, owner) then
 		return cid
