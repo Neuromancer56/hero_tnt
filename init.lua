@@ -97,7 +97,11 @@ local function destroy(drops, npos, cid, c_air, c_fire,
 		ignore_protection, ignore_on_blast, owner)
 	local def = cid_data[cid]
 	--if (not ignore_protection and minetest.is_protected(npos, owner)) or  (def.name ~= "default:cobble" and def.name ~= "hero_mine_items:magma" and def.name ~= "default:tree") then
-	if (not ignore_protection and minetest.is_protected(npos, owner)) or  (def.name ~= "default:cobble" and def.name ~= "hero_mines:magma") then
+	--if (not ignore_protection and minetest.is_protected(npos, owner)) or  (def.name ~= "default:cobble" and def.name ~= "hero_mines:magma" and def.name ~= "default:stone" and def.name ~= "boulders:boulder") then
+	local boulders_enabled = minetest.get_modpath("boulders")
+	if (not ignore_protection and minetest.is_protected(npos, owner)) or
+		(def.name ~= "default:cobble" and def.name ~= "hero_mines:magma" and
+		(not boulders_enabled or (def.name ~= "default:stone" and def.name ~= "boulders:boulder"))) then
 	--if (not ignore_protection and minetest.is_protected(npos, owner)) or  def.name ~= "default:cobble" then
 	--if not ignore_protection and minetest.is_protected(npos, owner) then
 		return cid
@@ -119,6 +123,9 @@ local function destroy(drops, npos, cid, c_air, c_fire,
 			pos = vector.new(npos)
 		}
 		return c_fire
+	elseif def.name == "default:stone" and minetest.get_modpath("boulders") then
+		minetest.set_node(npos, { name = "boulders:boulder" })
+		return minetest.get_content_id("boulders:boulder")
 	else
 		local node_drops = minetest.get_node_drops(def.name, "")
 		for _, item in pairs(node_drops) do
